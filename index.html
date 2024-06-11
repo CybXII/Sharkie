@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./fonts/fonts.css">
+    <title>Sharkie</title>
+    <script src="models/world.class.js"></script>
+    <script src="models/keyboard.class.js"></script>
+    <script src="models/drawable.class.js"></script>
+    <script src="models/statusBar.class.js"></script>
+    <script src="models/coinBar.class.js"></script>
+    <script src="models/poisonBar.class.js"></script>
+    <script src="models/bossBar.class.js"></script>
+    <script src="models/moveableObject.class.js"></script>
+    <script src="models/character.class.js"></script>
+    <script src="models/greenFish.class.js"></script>
+    <script src="models/redFish.class.js"></script>
+    <script src="models/orangeFish.class.js"></script>
+    <script src="models/jellyFish.class.js"></script>
+    <script src="models/bubble.class.js"></script>
+    <script src="models/endboss.class.js"></script>
+    <script src="models/background.class.js"></script>
+    <script src="models/farBackground.class.js"></script>
+    <script src="models/ground.class.js"></script>
+    <script src="models/water.class.js"></script>
+    <script src="models/level.class.js"></script>
+    <script src="models/coin.class.js"></script>
+    <script src="models/bottles.class.js"></script>
+    <script src="models/level1.js"></script>
+    <script src="js/game.js"></script>
+    <link rel="icon" type="image" href="./img/2.Enemy/3 Final Enemy/1.Introduce/6.png" />
+</head>
+<body onload="init()">
+    <div class="turnDevice">Turn Your Device to Play</div>
+    <div id="content" class="content">
+        <div id="hud" class="hud">
+            <div class="left_side">
+                <button onpointerup="updateInput(event, false)" onpointerdown="updateInput(event, true)" id="upButton" class="move_buttons">^</button>
+                <button onpointerup="updateInput(event, false)" onpointerdown="updateInput(event, true)" id="downButton" class="move_buttons">v</button>
+                <button onpointerup="updateInput(event, false)" onpointerdown="updateInput(event, true)" id="leftButton" class="move_buttons"><</button>
+                <button onpointerup="updateInput(event, false)" onpointerdown="updateInput(event, true)" id="rightButton" class="move_buttons">></button>
+            </div>
+            <div id="options" class="options">
+                <img id="endScreen" class="endScreen d_none"></img>
+                <img id="endGame" onclick="resetWorld()" class="endGame scaleImg d_none" src="./img/6.Botones/Try again/Recurso 16.png" alt="">
+                <h1 id="play" class="pulse" onclick="startGame()">Start</h1>
+                <h2 id="controls" class="pulse" onclick="showControls()">Controls</h2>
+                <a href="imprint.html" id="imprint" target="_blank"><h3 class="pulse">Imprint</h3></a>
+                <a href="privacy.html" id="privacy" target="_blank"><h3 class="pulse">Privacy Policy</h3></a>
+                <h2 id="close" class="pulse d_none">X</h2>
+            </div>        
+            <div class="right_side">
+                <button onclick="toggleMute()" id="muteButton" class="mute_button"><img id="mute" class="mute" src="img/mute-6694067.svg" alt=""></button>
+                <button class="screenButton" onclick="toggleScreensize(),changeImg()"><img id="screen" class="screen" src="img/arrows-2816042.svg" alt=""></button>   
+                <button onpointerup="updateInput(event, false)" onpointerdown="updateInput(event, true)" id="slapButton" class="move_buttons">S</button>
+                <button onpointerup="updateInput(event, false)" onpointerdown="updateInput(event, true)" id="bubbleButton" class="move_buttons">B</button>   
+            </div>
+        </div>    
+        <h4 id="backToMenu" class="resetGame d_none" onclick="resetWorld()">X</h4>
+        <div id="keys_left" class="keys_left pulse d_none">
+            <img id="move_keys_left_img" class="move_img d_none" src="./img/6.Botones/Tittles/Move title.png" alt="">
+            <div id="move_keys_left" class="move_keys d_none">
+                <p>W</p>
+                <div id="move_keys_secondary_left" class="move_keys_secondary d_none">
+                    <p>A</p>
+                    <p>S</p>
+                    <p>D</p>
+                </div>
+            </div>
+            <div class="attack_key "></div>
+        </div>
+        <div id="keys_right" class="keys_right pulse d_none">
+            <img id="move_keys_right_img" class="move_img d_none" src="./img/6.Botones/Tittles/Attack tittle.png" alt="">
+            <div id="move_keys_right" class="move_keys d_none">
+                <p>W<br> Poison Bubble</p>
+                <div id="move_keys_secondary_right" class="move_keys_secondary d_none">
+                    <p>Spacebar<br> Slap Bubble</p>
+                </div>
+            </div>
+            <div class="attack_key"></div>
+        </div>
+    </div>  
+    <canvas id="canvas" width="720px" height="480px"></canvas>
+</body>
+</html>

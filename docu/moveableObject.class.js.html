@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: moveableObject.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: moveableObject.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>class MoveableObject extends Drawable{
+    speed = 0.15;
+    speedY = 0;
+    acceleration = 1
+    intervalId;
+    distance;
+    destroyed= false;
+    destroy = false;
+    offsetY;
+    offsetX;
+    offsetXMinus;
+    offsetYMinus;
+    swimRight;
+    swimLeft;
+    swimUp;
+    swimDown;
+    isDead = false;
+    isHurt = false;
+    deadPlayed;
+    isAttacking = false;
+    isBubbeld;
+    hitpoints = 100;
+    poisonEnergy = 0;
+    coins = 50;
+    attackDelayActive = false
+
+
+    /**
+     * Plays the animation using the provided images.
+     * @param {array} Images - array of image paths
+     */
+    playAnimation(Images){
+        let i = this.currentImage % Images.length
+        let path = Images[i];
+        this.img = this.imageCache[path];
+        this.currentImage++;
+    }
+
+
+    /**
+     * Move the object to the right based on the given speed.
+     *
+     * @param {number} speed - The speed at which the object should move to the right.
+     * @return {void} 
+     */
+    moveRight(speed) {
+        this.x = this.x + speed;
+    }
+
+
+    /**
+     * Moves the object up by the specified speed.
+     * @param {number} speed - the speed at which to move the object up
+     * @return {void} 
+     */
+    moveUp(speed){
+        this.y = this.y - speed;
+    }
+
+
+    /**
+     * Move the object down by a certain speed.
+     * @param {number} speed - the speed at which to move down
+     * @return {void} 
+     */
+    moveDown(speed) {
+        this.y = this.y + speed;
+    }
+
+
+    /**
+     * Moves the object to the left by the specified speed.
+     * @param {number} speed - The speed at which to move the object to the left.
+     */
+    moveLeft(speed){
+        this.x -= speed;
+    }
+
+
+    /**
+     * A function that applies air to the object's movement by decreasing the y position and increasing the vertical speed over time.
+     */
+    applyAir(){
+        setInterval(()=> {
+            this.y -= this.speedY;
+            this.speedY += this.acceleration;
+        },80);
+    }
+
+
+    /**
+     * A function that moves the object to the left at a specified speed.
+     * @param {number} speed - the speed at which the object moves to the left
+     */
+    movementLeft(speed){
+        setInterval(() =>{
+            if (this.swimLeft)
+                this.x -= speed;
+        }, 1000/35)
+    }
+
+
+    /**
+     * A function that moves an object to the right at a given speed.
+     * @param {type} speed - the speed at which the object moves to the right
+     * @return {type} 
+     */
+    movementRight(speed){
+        setInterval(() =>{
+            if (this.swimRight)
+                this.x += speed;
+        }, 1000/35)
+    }
+
+
+    /**
+     * A function that moves an object up at a given speed.
+     * @param {number} speed - the speed at which the object moves up
+     */
+    movementUp(speed){
+        setInterval(() =>{
+            if (this.swimUp)
+                this.y -= speed;
+        }, 1000/35)
+    }
+
+
+    /**
+     * A function that handles movement down based on the given speed.
+     * @param {type} speed - the speed at which to move down
+     * @return {type} undefined
+     */
+    movementDown(speed){
+        setInterval(() =>{
+            if (this.swimDown)
+                this.y += speed;
+        }, 1000/35)
+    }
+
+
+    /**
+     * Calculate the distance between the object and the character, and check if the object should be destroyed.
+     */
+    destroyObject(){
+        this.distance = this.x - world.character.x
+        if(this.x &lt;=this.endpoint|| this.y &lt;= -500){
+            if (this.destroyableObject()){
+                    this.finalyDestroy(this.intervalId);
+            }
+        }
+    }
+
+
+    /**
+     * Check if the item is destroyable and perform destruction if necessary.
+     * @param {array} items - The list of items to check for destroyable items.
+     * @return {void} 
+     */
+    checkDestroyAbleItems(items){
+        let found = items.find((element) => element.id == this.id);
+        if (found){
+            this.destroyDestroyAble(items);     
+        }
+    }
+
+
+    /**
+     * A method that checks if the instance is Coins, Bottles, or Bubble and destroys the destroyable items accordingly.
+     */
+    finalyDestroy(){
+        if (this instanceof Coins)
+            this.checkDestroyAbleItems(world.level.coins);
+        if (this instanceof Bottles)
+            this.checkDestroyAbleItems(world.level.bottles);
+        if (this instanceof Bubble)
+            this.checkDestroyAbleItems(world.bubbels);
+        else {
+            let found = world.enemies.find((element) => element.intervalId == this.intervalId);
+            if (found){
+                this.destroyDestroyAble(world.enemies);
+            }        
+        }
+    }
+
+
+    /**
+     * Destroy the destroyable object and clear the interval.
+     * @param {object} object - the object to be destroyed
+     * @return {void} 
+     */
+    destroyDestroyAble(object){
+        let isID = (element) => element.intervalId == this.intervalId;
+        object.splice(`${object.findIndex(isID)}`,1)
+        this.destroy = true;
+        clearInterval(this.intervalId);
+        this.intervalId= null;        
+    }
+
+
+    /**
+     * A function to check the character's hurt images and trigger the appropriate animations.
+     * @param {type} hurtImages - description of the hurt images
+     * @return {type} 
+     */
+    checkCharHurt(hurtImages){
+        if (this instanceof Character){
+            this.charAnimations(hurtImages);
+        }
+        if (this instanceof Endboss){
+            this.bossAnimations(hurtImages);
+        }
+    }
+
+
+    /**
+     * A description of the entire function.
+     */
+    bossAnimations(hurtImages){
+        if (this.currentImage == hurtImages.length){
+            if(!mute)
+                bossHit_sound.play();
+            this.stopHurtChecker();
+        }
+    }
+
+
+    /**
+     * Resets the attack status flags and variables.
+     */
+    resetAttack(){
+        this.bubbleActive = false ;
+        this.isAttacking = false;
+        this.attackAnimationEnd = true
+        this.slapActive = false ;
+    }
+
+
+    /**
+     * Stop the hurt checker and reset hurt, poisoned, and shocked status.
+     */
+    stopHurtChecker(){
+        this.isHurt = false
+        this.isPoisoned = false
+        this.isShocked = false
+        if (this instanceof Character){
+            world.enemies.forEach(element => {
+                if (this.isColliding(element)){
+                    this.isHurt = true;
+                    if (element instanceof JellyFish)
+                    this.isShocked = true;
+                    else
+                    this.isPoisoned = true
+                }
+            });    
+        }
+    }
+
+
+    /**
+     * Set a delay for the attack mechanism.
+     */
+    setDelay(){
+        this.attackDelayActive = true
+        setTimeout(() => {
+            this.attackDelayActive = false
+        }, 1000);
+    }
+
+
+    /**
+     * Check if the boss is dead.
+     *
+     * @return {boolean} true if the boss is dead, false otherwise
+     */
+    checkBossDeath(){
+        return this instanceof Endboss &amp;&amp; !this.deadPlayed &amp;&amp; this.currentImage >= this.Images_Dead.length;
+    }
+
+
+    /**
+     * Sets the dead object and schedules final destruction for certain types of fish.
+     */
+    setDeadObject(){
+        this.deadPlayed = true;
+        if (this instanceof JellyFish||this instanceof GreenFish || this instanceof RedFish || this instanceof OrangeFish)
+            setTimeout(() => {this.finalyDestroy();}, 2500);
+    }
+
+
+    /**
+     * A function to check if the object is out of the field boundaries.
+     */
+    outOfFieldChecker(){
+            if (this.x&lt;-1000||this.y&lt;-1000||this.y>1000 || this.x >20000){
+                this.finalyDestroy();
+            }
+    }
+
+
+    /**
+     * Check if the current object is an instance of Coins, Bottles, JellyFish, Character, Bubble, GreenFish, RedFish, Boss, or OrangeFish.
+     *
+     * @return {boolean} true if the current object is an instance of any of the specified classes, false otherwise
+     */
+    collisionObjects(){
+        return this instanceof Coins||this instanceof Bottles||this instanceof JellyFish|| this instanceof Character || this instanceof Bubble || this instanceof GreenFish || this instanceof RedFish || this instanceof Boss || this instanceof OrangeFish;
+    }
+
+
+    /**
+     * Generates the enemy's last dead image.
+     *
+     * @return {boolean} true if the enemy's last dead image should be generated, false otherwise
+     */
+    enemyLastDeadImg(){
+        return this instanceof Character &amp;&amp; !this.deadPlayed || this instanceof Endboss &amp;&amp; !this.deadPlayed || this instanceof JellyFish &amp;&amp; !this.deadPlayed || this instanceof RedFish &amp;&amp; !this.deadPlayed || this instanceof GreenFish&amp;&amp; !this.deadPlayed || this instanceof OrangeFish &amp;&amp; !this.deadPlayed;
+    }
+
+
+    /**
+     * Check if the character or endboss is dead and needs to play the death animation.
+     *
+     * @return {boolean} Boolean indicating if the death animation needs to be played.
+     */
+    checkDeadPlayAnimation(){
+        return this instanceof Character &amp;&amp; this.deadPlayed|| this instanceof Endboss &amp;&amp; this.deadPlayed ||this instanceof JellyFish &amp;&amp; this.deadPlayed ||this instanceof RedFish &amp;&amp; this.deadPlayed || this instanceof GreenFish &amp;&amp; this.deadPlayed || this instanceof OrangeFish &amp;&amp; this.deadPlayed;
+    }
+
+
+    /**
+     * Check if the object is a destroyable object.
+     *
+     * @return {boolean} true if the object is a destroyable object, false otherwise
+     */
+    destroyableObject(){
+        return this instanceof JellyFish || this instanceof GreenFish || this instanceof RedFish || this instanceof OrangeFish || this instanceof Bubble || this instanceof Coins|| this instanceof Bottles;
+    }
+
+
+    /**
+     * A description of the entire function.
+     * @return {type} description of return value
+     */
+    startSlap(){
+        return this.keyChecker.SLAP &amp;&amp; !this.slapActive;
+    }
+
+
+    /**
+     * This function checks if the BUBBLE key is present and the bubble is not active.
+     * @return {boolean} true if BUBBLE key is present and bubble is not active, false otherwise
+     */
+    startBubble(){
+        return this.keyChecker.BUBBLE &amp;&amp; !this.bubbleActive;
+    }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Background.html">Background</a></li><li><a href="Bossbar.html">Bossbar</a></li><li><a href="Bottles.html">Bottles</a></li><li><a href="Bubble.html">Bubble</a></li><li><a href="Character.html">Character</a></li><li><a href="Coinbar.html">Coinbar</a></li><li><a href="Coins.html">Coins</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="FarBackground.html">FarBackground</a></li><li><a href="GreenFish.html">GreenFish</a></li><li><a href="Ground.html">Ground</a></li><li><a href="JellyFish.html">JellyFish</a></li><li><a href="Level.html">Level</a></li><li><a href="OrangeFish.html">OrangeFish</a></li><li><a href="Poisonbar.html">Poisonbar</a></li><li><a href="RedFish.html">RedFish</a></li><li><a href="Statusbar.html">Statusbar</a></li><li><a href="Water.html">Water</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#animateControlsWindow">animateControlsWindow</a></li><li><a href="global.html#changeImg">changeImg</a></li><li><a href="global.html#checkKeys">checkKeys</a></li><li><a href="global.html#endScreen">endScreen</a></li><li><a href="global.html#hideKeyAnimation">hideKeyAnimation</a></li><li><a href="global.html#hideKeys">hideKeys</a></li><li><a href="global.html#hideOptions">hideOptions</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#muteAllSounds">muteAllSounds</a></li><li><a href="global.html#openKeyDiv">openKeyDiv</a></li><li><a href="global.html#playBackGroundSound">playBackGroundSound</a></li><li><a href="global.html#playStandartSounds">playStandartSounds</a></li><li><a href="global.html#playWinLoseSounds">playWinLoseSounds</a></li><li><a href="global.html#refreshBars">refreshBars</a></li><li><a href="global.html#resetWorld">resetWorld</a></li><li><a href="global.html#showControls">showControls</a></li><li><a href="global.html#showKeys">showKeys</a></li><li><a href="global.html#showOptions">showOptions</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#toggleMute">toggleMute</a></li><li><a href="global.html#toggleScreensize">toggleScreensize</a></li><li><a href="global.html#updateInput">updateInput</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat Apr 13 2024 03:13:01 GMT+0200 (Mitteleuropäische Sommerzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
